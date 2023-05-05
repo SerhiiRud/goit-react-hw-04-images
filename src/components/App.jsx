@@ -35,10 +35,6 @@ export class App extends Component {
         this.setState({
           status: Status.PENDING,
           isLoading: true,
-          page:
-            prevState.searchTerm !== this.state.searchTerm
-              ? 1
-              : this.state.page,
         });
 
         const result = await getImages(this.state.searchTerm, this.state.page);
@@ -51,8 +47,7 @@ export class App extends Component {
 
         this.setState({
           images:
-            prevState.searchTerm === this.state.searchTerm &&
-            this.state.page !== 1
+            prevState.searchTerm === this.state.searchTerm
               ? [...prevState.images, ...result.data.hits]
               : [...result.data.hits],
           status: Status.RESOLVED,
@@ -67,7 +62,7 @@ export class App extends Component {
   }
 
   searchHandler = inputValue => {
-    this.setState({ searchTerm: inputValue });
+    this.setState({ searchTerm: inputValue, images: [], page: 1 }); //added images, page
   };
 
   onLoadMore = () => {
