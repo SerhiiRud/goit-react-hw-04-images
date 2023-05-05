@@ -1,47 +1,40 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { GalleryItem, GalleryItemImage } from './ImageGalleryItem.styled';
 import { Modal } from 'components/Modal/Modal';
 
-export class ImageGalleryItem extends Component {
-  state = {
-    isModalShown: false,
-    imageData: { img: '', tags: '' },
+export const ImageGalleryItem = ({ imageObject }) => {
+  const { largeImageURL, webformatURL, tags } = imageObject;
+  const [isModalShown, setIsModalShown] = useState(false);
+  const [imageData, setImageData] = useState({ img: '', tags: '' });
+
+  const onModalShow = ({ largeImageURL, tags }) => {
+    setIsModalShown(true);
+    setImageData({ img: largeImageURL, tags });
   };
 
-  onModalShow = imageData => {
-    this.setState({ imageData, isModalShown: true });
+  const onModalClose = () => {
+    setIsModalShown(false);
   };
 
-  onModalClose = () => {
-    this.setState({ isModalShown: false });
-  };
-
-  render() {
-    const { largeImageURL, webformatURL, tags } = this.props.imageData;
-    return (
-      <GalleryItem>
-        <>
-          <GalleryItemImage
-            onClick={e => {
-              e.preventDefault();
-              this.onModalShow({ largeImageURL, tags });
-            }}
-            src={webformatURL}
-            alt={tags}
-          />
-          {this.state.isModalShown && (
-            <Modal
-              modalData={this.props.imageData}
-              onModalClose={this.onModalClose}
-              modalInfo={this.state.isModalShown}
-            />
-          )}
-        </>
-      </GalleryItem>
-    );
-  }
-}
+  return (
+    <GalleryItem>
+      <>
+        <GalleryItemImage
+          onClick={e => {
+            e.preventDefault();
+            onModalShow({ largeImageURL, tags });
+          }}
+          src={webformatURL}
+          alt={tags}
+        />
+        {isModalShown && (
+          <Modal modalData={imageObject} onModalClose={onModalClose} />
+        )}
+      </>
+    </GalleryItem>
+  );
+};
 
 // ImageGalleryItem.propTypes = {
 //   imageData: PropTypes.shape({
@@ -49,5 +42,8 @@ export class ImageGalleryItem extends Component {
 //     webformatURL: PropTypes.string.isRequired,
 //     largeImageURL: PropTypes.string.isRequired,
 //   }),
-//   onImgClick: PropTypes.func.isRequired,
+// };
+
+// GalleryItemImage.propTypes = {
+//   onClick: PropTypes.func.isRequired,
 // };
