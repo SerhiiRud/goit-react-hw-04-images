@@ -4,7 +4,7 @@ import { GalleryItem, GalleryItemImage } from './ImageGalleryItem.styled';
 import { Modal } from 'components/Modal/Modal';
 
 export const ImageGalleryItem = ({ imageObject }) => {
-  const { largeImageURL, webformatURL, tags } = imageObject;
+  const { webformatURL, tags } = imageObject;
   const [isModalShown, setIsModalShown] = useState(false);
   const [imageData, setImageData] = useState({ img: '', tags: '' });
 
