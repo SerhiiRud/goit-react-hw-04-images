@@ -8,7 +8,7 @@ export const ImageGalleryItem = ({ imageObject }) => {
   const [isModalShown, setIsModalShown] = useState(false);
   const [imageData, setImageData] = useState({ img: '', tags: '' });
 
-  const onModalShow = ({ largeImageURL, tags }) => {
+  const onModalShow = (largeImageURL, tags) => {
     setIsModalShown(true);
     setImageData({ img: largeImageURL, tags });
   };
@@ -23,7 +23,7 @@ export const ImageGalleryItem = ({ imageObject }) => {
         <GalleryItemImage
           onClick={e => {
             e.preventDefault();
-            onModalShow({ largeImageURL, tags });
+            onModalShow(imageData);
           }}
           src={webformatURL}
           alt={tags}
@@ -36,14 +36,14 @@ export const ImageGalleryItem = ({ imageObject }) => {
   );
 };
 
-// ImageGalleryItem.propTypes = {
-//   imageData: PropTypes.shape({
-//     tags: PropTypes.string.isRequired,
-//     webformatURL: PropTypes.string.isRequired,
-//     largeImageURL: PropTypes.string.isRequired,
-//   }),
-// };
+ImageGalleryItem.propTypes = {
+  imageObject: PropTypes.shape({
+    tags: PropTypes.string.isRequired,
+    webformatURL: PropTypes.string.isRequired,
+    largeImageURL: PropTypes.string.isRequired,
+  }),
+};
 
-// GalleryItemImage.propTypes = {
-//   onClick: PropTypes.func.isRequired,
-// };
+GalleryItemImage.propTypes = {
+  onClick: PropTypes.func.isRequired,
+};

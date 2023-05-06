@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { AppContainer } from './App.styled';
@@ -15,78 +15,73 @@ const Status = {
 
 const ERROR_MSG = 'Error happend';
 
-export class App extends Component {
-  state = {
-    searchTerm: '',
-    images: [],
-    status: 'idle',
-    isLoading: false,
-    page: 1,
-    totalPages: 0,
-    error: null,
-  };
+export const App = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [status, setStatus] = useState('idle');
+  const [isLoading, setIsLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
+  const [error, setError] = useState(null);
 
-  async componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.searchTerm !== this.state.searchTerm ||
-      prevState.page !== this.state.page
-    ) {
+  useEffect(() => {
+    if (searchTerm === '') {
+      return;
+    }
+    const controller = new AbortController();
+    async function fetchData() {
       try {
-        this.setState({
-          status: Status.PENDING,
-          isLoading: true,
+        setStatus(Status.PENDING);
+        setIsLoading(true);
+        const result = await getImages(searchTerm, page, {
+          signal: controller.signal,
         });
-
-        const result = await getImages(this.state.searchTerm, this.state.page);
         if (result.data.totalHits === 0) {
-          return this.setState({
-            images: [],
-            status: Status.REJECTED,
-          });
+          setImages([]);
+          setStatus(Status.REJECTED);
+          return;
         }
-
-        this.setState({
-          images:
-            prevState.searchTerm === this.state.searchTerm
-              ? [...prevState.images, ...result.data.hits]
-              : [...result.data.hits],
-          status: Status.RESOLVED,
-          totalPages: Math.floor(result.data.totalHits / 12),
-        });
+        setImages(prevImages => [...prevImages, ...result.data.hits]);
+        setIsLoading(false);
+        setStatus(Status.RESOLVED);
+        setTotalPages(Math.floor(result.data.totalHits / 12));
       } catch (error) {
-        this.setState({ error: ERROR_MSG });
+        setError(ERROR_MSG);
       } finally {
-        this.setState({ isLoading: false });
+        setIsLoading(false);
       }
     }
-  }
+    fetchData();
+    return () => {
+      controller.abort();
+    };
+  }, [searchTerm, page]);
 
-  searchHandler = inputValue => {
-    this.setState({ searchTerm: inputValue, images: [], page: 1 }); //added images, page
+  const searchHandler = inputValue => {
+    setSearchTerm(inputValue);
+    setImages([]);
+    setPage(1);
   };
 
-  onLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const onLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  render() {
-    const { images, status, isLoading, error, page, totalPages } = this.state;
-    return (
-      <AppContainer>
-        <Searchbar onSubmit={this.searchHandler} />
-        {isLoading && <Loader />}
-        {this.state.status === 'rejected' && (
-          <div>
-            Sorry, there are no images matching your search query. Please try
-            again.
-          </div>
-        )}
-        {error && <div>{error}</div>}
-        <ImageGallery images={images} />
-        {images.length > 0 && status !== 'pending' && page <= totalPages && (
-          <Button onClick={this.onLoadMore}>Load More</Button>
-        )}
-      </AppContainer>
-    );
-  }
-}
+  return (
+    <AppContainer>
+      <Searchbar onSubmit={searchHandler} />
+      {isLoading && <Loader />}
+      {status === 'rejected' && (
+        <div>
+          Sorry, there are no images matching your search query. Please try
+          again.
+        </div>
+      )}
+      {error && <div>{error}</div>}
+      <ImageGallery images={images} />
+      {images.length > 0 && status !== 'pending' && page <= totalPages && (
+        <Button onClick={onLoadMore}>Load More</Button>
+      )}
+    </AppContainer>
+  );
+};
